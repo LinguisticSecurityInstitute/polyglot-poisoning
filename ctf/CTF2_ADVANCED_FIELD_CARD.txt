@@ -1,0 +1,67 @@
+FIELD CARD — CTF2 ADVANCED: "Rosetta Fragments" (DEATHCon 2026)
+Workshop: "Polyglot Poisoning: Hands-On Hunting for Linguistic
+Attacks in AI" — Sahara Al-Madi, Linguistic Security Institute
+
+Pocket-sized. The schema, the codes and the doctrine live in
+LEDGER_REFERENCE_POLYGLOT_POISONING.txt — keep that open too.
+
+────────────────────────────────────────
+THE SHAPE OF THIS HUNT
+────────────────────────────────────────
+A crew split one payload across four packages. Each package was
+under-declared to stay beneath the wire, written in a different tongue,
+and shaped a different way — because a filter tuned for one evasion
+catches only that evasion. Individually unremarkable. Together, one
+campaign.
+
+They made one mistake: every package carries the same forged
+inspection stamp.
+
+────────────────────────────────────────
+THE FOUR MOVES
+(generic syntax — the ledger decides which columns matter)
+────────────────────────────────────────
+1. STACKING — what is rare is interesting. Patterns packs several
+   stamps into one string, so split BEFORE you count or you are
+   counting combinations, not marks:
+
+       PolyglotPoisoning_CL
+       | mv-expand stamp = split(Patterns, ",") to typeof(string)
+       | summarize packages = dcount(UserPrincipal) by stamp
+       | sort by packages asc
+
+   Rare is a shortlist, not a verdict. Check the candidates.
+
+2. FILTERING — cut to the carriers:
+
+       PolyglotPoisoning_CL
+       | where Patterns contains "..."
+
+3. SEQUENCING — order reveals structure:
+
+       PolyglotPoisoning_CL
+       | order by SomeColumn asc
+
+4. EXTRACTING — pull fenced text out of prose:
+
+       | extend piece = extract(@"<fence>(...)<fence>", 1, SomeColumn)
+
+   The fence is a pair of characters ordinary prose would never use.
+
+────────────────────────────────────────
+REMEMBER
+────────────────────────────────────────
+- A score under 5 passes the wire. Under-declared cargo is the oldest
+  trick in the supply chain.
+- Contraband rarely ships in one box. Split payloads reassemble.
+- The same stamp on many packages is either a trusted shipper — or one
+  forger. Rare is not the same as forged.
+- One crew that changes language AND shaping on every package is
+  betting you will file four small incidents instead of one big one.
+- Trust the declared values, not the clock.
+- Not everything worth finding wears a wrapper.
+
+Flag format for this CTF: flag{...}
+
+Rehearse every move offline first: data/practice_ledger.jsonl in
+https://github.com/LinguisticSecurityInstitute/linguistic-firewall

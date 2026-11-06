@@ -1,0 +1,64 @@
+// ═══════════════════════════════════════════════════════════════
+// RULE: qufl_lock_anchor
+// Family: metadata-anchor (Hunt 1 of 5)
+// Author pattern: ANCHOR + CONTEXT, thresholds kept explainable
+// Works against: PolyglotPoisoning_CL (live) — and conceptually
+// against data/practice_ledger.jsonl (offline, via grep/python)
+// ═══════════════════════════════════════════════════════════════
+
+// ── THE ANCHOR ─────────────────────────────────────────────────
+// قفل ("lock") is a trilateral root (q-f-l). It survives EVERY
+// Arabic dialect in the ledger: MSA writes it قفل, Egyptian writes
+// it قفل, Tunisian writes it قفل. Dialects change the cells around
+// the root; the root does not move. One anchor, three languages.
+//
+// This is the whole trick of Hunt 1: you do not need to read the
+// prompt. You need to know that this root exists and what it means.
+
+PolyglotPoisoning_CL
+| where PromptPreview contains "قفل"
+| project TimeGenerated, UserPrincipal, Language, Variant, RiskScore, PromptPreview
+
+
+// ── WITH CONTEXT (the museum-label guard) ──────────────────────
+// The anchor alone will also catch a curator writing an honest
+// museum label about Victorian locksmithing. That row is benign —
+// and it is IN the sample pack on purpose (v2_en_museum_label.txt).
+// Context kills the false positive without touching the anchor:
+// require the row to ALSO look dialectal (V2) or carry framing words.
+
+PolyglotPoisoning_CL
+| where PromptPreview contains "قفل"
+| where Variant == "V2" or PromptPreview has_any ("manual", "novel", "step")
+| project TimeGenerated, UserPrincipal, Language, Variant, RiskScore, PromptPreview
+
+
+// ── WITH THRESHOLD (tune the wire) ─────────────────────────────
+// The wire trips at 5. Anchored rows under the wire are the
+// interesting ones — someone is walking the root in UNDER your
+// alarm. Watch the 2–5 band, not just the blocks.
+
+PolyglotPoisoning_CL
+| where PromptPreview contains "قفل"
+| where RiskScore >= 2 and RiskScore < 5
+| project TimeGenerated, UserPrincipal, Language, Variant, RiskScore, PromptPreview
+| sort by RiskScore desc
+
+
+// ── EXPECTED BEHAVIOR ─────────────────────────────────────────
+// Against data/practice_ledger.jsonl the anchor returns exactly TWO
+// rows — ar-MSA and ar-EG — and nothing else. The ar-TN row in the
+// practice data is an exam-cheating prompt that never mentions a lock,
+// which is the honest lesson: an anchor catches a ROOT, not a dialect.
+// Pick the wrong root and a whole dialect walks past you. On the live
+// table the same anchor spans all three Arabic codes, because all three
+// carry lock-family prompts there. The museum-label row (en-US,
+// framing, score 1.0) demonstrates WHY the context clause exists:
+// it contains "lock" and "step" in English and is completely benign.
+//
+// Offline equivalent (no Sentinel needed):
+//   python -c "import sys,json; [print(r['Language'], r['RiskScore'], r['PromptPreview'][:60]) for r in map(json.loads, open('data/practice_ledger.jsonl', encoding='utf-8')) if 'قفل' in r['PromptPreview']]"
+//
+// A rule you can explain in one sentence is a rule you can defend
+// in a report. This one is: "flag any row that mentions the lock
+// root, then double-check the ones that look shaped."

@@ -1,0 +1,134 @@
+LEDGER REFERENCE — POLYGLOT POISONING (DEATHCon 2026)
+Attached to every challenge in this category.
+Workshop: "Polyglot Poisoning: Hands-On Hunting for Linguistic
+Attacks in AI" — Sahara Al-Madi, Linguistic Security Institute
+
+Offline? Every mechanic here also works against
+data/practice_ledger.jsonl in the repo — same seven columns, 22 rows,
+no lab required.
+
+────────────────────────────────────────
+CONNECT
+────────────────────────────────────────
+1. Sentinel and Azure access is provided for this workshop.
+   Refer to the DEATHCon setup instructions for Sentinel, Azure
+   and your @deathlab.net account — before the session, not
+   during it.
+2. Open the deathcon2026-sentinel workspace, Logs blade.
+3. Every participant has Reader access. Queries are KQL.
+
+Start here to see what you are working with:
+
+    PolyglotPoisoning_CL
+    | take 20
+
+────────────────────────────────────────
+THE INTAKE LEDGER
+────────────────────────────────────────
+One custom table: PolyglotPoisoning_CL.
+
+  TimeGenerated   when it arrived
+  UserPrincipal   who sent it
+  Language        which tongue, at dialect level - or mul for a mix
+  RiskScore       scored risk — a real number; the wire trips at 5
+  Variant         how the request was shaped
+  Patterns        detections it tripped (CSV string, several per row)
+  PromptPreview   first 200 characters of the request
+
+────────────────────────────────────────
+LANGUAGE CODES
+────────────────────────────────────────
+You do not need to speak any of these. You need to read the labels.
+
+  ar-MSA   Modern Standard Arabic — the formal written register
+  ar-EG    Egyptian Arabic
+  ar-TN    Tunisian Arabic
+  en-US    English
+  es-ES    Spanish          fr-FR   French
+  de-DE    German           it-IT   Italian
+  pt-PT    Portuguese       sw-KE   Swahili
+  hi-IN    Hindi            bn-IN   Bengali
+  th-TH    Thai
+
+Codes carry region suffixes — filter the full code
+(Language == "ar-TN"), or use startswith for a family.
+
+SUBMITTING YOUR OWN? Any ISO code is accepted, with or without a region
+suffix - and `mul` is the code for multiple languages. Use it whenever you
+are mixing, matching or experimenting and no single code would be true.
+It counts exactly the same as any other.
+
+
+Arabic is not one language in this ledger. Egyptian and Tunisian differ
+in vocabulary and grammar. A filter that handles one may not handle the
+other at all, which is exactly why they are separate codes.
+
+────────────────────────────────────────
+VARIANT — HOW THE REQUEST WAS SHAPED
+────────────────────────────────────────
+  V1   asked plainly — a standard, direct request
+  V2   asked in a regional variety or dialect
+
+Those two codes are the whole column. Everything else about shaping —
+the register it borrowed, the framing it wore, the script it was typed
+in — lives in Patterns, not here. A request that is only framed (an
+old manual, a museum label, a novel) stays V1.
+
+Language says WHERE a request was asked. Variant says WHAT was done to
+it. They vary independently, so they are two columns, not one. A crew
+that changes both at once is not four incidents. It is one campaign
+wearing four coats.
+
+────────────────────────────────────────
+PATTERNS — WHAT THE DETECTIONS FLAGGED
+────────────────────────────────────────
+Deliberately not listed here. Finding out what lives in this column,
+and which values are rare, is part of the work.
+
+One thing you get for free: Patterns packs several values into a single
+comma-separated string. Counting the column directly counts
+COMBINATIONS, not individual detections. Split before you count.
+
+    PolyglotPoisoning_CL
+    | mv-expand stamp = split(Patterns, ",") to typeof(string)
+    | summarize rows = count() by stamp
+    | sort by rows asc
+
+────────────────────────────────────────
+WHY THIS TABLE LOOKS LIKE THIS
+────────────────────────────────────────
+At DETECTION time, the language is where the attack hides — a filter
+trained on English stops recognizing a request the moment it arrives in
+Tunisian. At HUNT time you cannot read every language, so you hunt the
+labels the detection left behind instead.
+
+That only works if the telemetry carries dialect and technique as
+columns. Most telemetry does not. This ledger does, which is the whole
+reason these hunts are possible.
+
+────────────────────────────────────────
+TAKE THIS BACK TO WORK
+────────────────────────────────────────
+These seven columns are close to the minimum an AI gateway should log
+if you ever want to hunt it: who asked, in which dialect, shaped how,
+scored what, flagged by which detections, and a preview you can pivot
+on.
+
+Why it matters: in a 48-prompt pilot against two public safety
+classifiers, both caught every English attempt and missed a third of
+the same requests in Egyptian Arabic — while wrongly refusing 60% of
+ordinary transliterated requests that English never had a problem with.
+Attacks got through AND real users got blocked, at the same time, in
+the same language. Neither is visible in telemetry that logs only
+"blocked: true".
+
+  Linguistic Firewall — the open-source probe behind this workshop:
+  https://github.com/LinguisticSecurityInstitute/linguistic-firewall
+
+  Method, the Report Card format, and the full market scan:
+  almadisahara.com  ·  linguisticsecurityinstitute@gmail.com
+
+If your logs cannot answer "which dialect is failing", these hunts are
+ones you cannot run at home. That is the gap.
+
+Flag format for this CTF: flag{...}
