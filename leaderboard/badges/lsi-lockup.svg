@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="120.0" viewBox="0 0 180 120" aria-label="Linguistic Security Institute">
+<path d="M22 26 L36 26 L37 84 C38 89 42 91 49 91 L58 91 L58 102 L13 102 C15 96 18 91 20 84 Z" fill="#EDE7D7"></path>
+<path d="M22 30.5 L36 30.5" stroke="#A89F8C" stroke-width="1.7"></path>
+<path d="M23 56 C26 58 30 58 33 56" fill="none" stroke="#A89F8C" stroke-width="1.7"></path>
+<path d="M23 70 C26 72 30 72 33 70" fill="none" stroke="#A89F8C" stroke-width="1.7"></path>
+<path d="M22 46 C16 41 11 34 9 24" fill="none" stroke="#EDE7D7" stroke-width="5" stroke-linecap="round"></path>
+<path d="M14 35 C12 30 10 26 6 22" fill="none" stroke="#EDE7D7" stroke-width="3.2" stroke-linecap="round"></path>
+<ellipse cx="6" cy="19" rx="5.6" ry="3" fill="#5FA68F" transform="rotate(-34 6 19)"></ellipse>
+<ellipse cx="15" cy="27" rx="4.6" ry="2.5" fill="#5FA68F" transform="rotate(-26 15 27)"></ellipse>
+<path d="M110 34 C110 23 72 22 72 43 C72 58 112 59 112 77 C112 95 76 98 70 87" fill="none" stroke="#E3A93C" stroke-width="9" stroke-linecap="round"></path>
+<circle cx="111" cy="31" r="6.4" fill="#E3A93C"></circle>
+<path d="M116 28 L127 22" stroke="#E3A93C" stroke-width="3.2" stroke-linecap="round"></path>
+<path d="M142 26 L156 26 L156 100 L142 100 Z" fill="#EDE7D7"></path>
+<path d="M128 26 L170 26 L170 36 L128 36 Z" fill="#EDE7D7"></path>
+<path d="M128 92 L170 92 L170 102 L128 102 Z" fill="#EDE7D7"></path>
+</svg>

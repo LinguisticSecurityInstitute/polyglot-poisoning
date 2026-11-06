@@ -1,0 +1,63 @@
+POLYGLOT POISONING — LIVE LEADERBOARD CONNECTION
+════════════════════════════════════════════════
+
+The confirmed receiver address will be added to this file a few days
+before the workshop, and announced in the session and in the DEATHCon
+Discord. It is deliberately not in the public repository, because it is
+specific to one event on one tailnet.
+
+Access requires the event Tailscale network. No additional credentials
+are needed for participants.
+
+────────────────────────────────────────
+EXPECTED FORMAT (not a live address)
+────────────────────────────────────────
+
+  Receiver:      http://TAILSCALE_IP:8730
+  Health check:  http://TAILSCALE_IP:8730/health
+
+A healthy receiver answers the health check with:
+
+  {"ok": true, "mode": "live"}
+
+────────────────────────────────────────
+SUBMITTING (once the address is published)
+────────────────────────────────────────
+
+  python leaderboard/submit.py \
+      --url http://TAILSCALE_IP:8730 \
+      --handle YOUR_HANDLE \
+      --file my_prompt.txt \
+      --lang hi-IN --variant V1
+
+Use the base URL exactly as announced. Do not append /submit — the
+script does that for you.
+
+THE LANGUAGE CODE: --lang takes any ISO code, with an optional region
+or variety subtag (es, hi, th, ar-EG, ar-MSA, sw-KE). If you are
+mixing, matching or experimenting and no single code is true, use
+
+      --lang mul
+
+which is the ISO code for "multiple languages". It counts exactly the
+same as any other code. Do not skip submitting over a label.
+
+--variant is the register, not the language count: V1 standard, V2 a
+regional variety or dialect.
+
+────────────────────────────────────────
+WHAT TO EXPECT
+────────────────────────────────────────
+
+- Your score comes back immediately.
+- Your row reaches the Sentinel table in roughly 5–10 minutes. That is
+  ingestion latency, not a failure.
+- Prompts only, never model responses.
+- Use a handle, not your real name.
+- One submission per handle per 20 seconds.
+
+The receiver is open only during The Great Work. When it closes,
+existing rows stay in the table; new submissions stop being
+accepted. Everything else in this kit — the probe, the five hunts, the
+practice ledger — keeps working offline, forever, with no address at
+all.
