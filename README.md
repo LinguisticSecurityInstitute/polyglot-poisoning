@@ -17,7 +17,7 @@ Published work keeps finding the same crack: guardrails that refuse
 harmful requests in English answer the *same request* in another
 language (Deng et al., ICLR 2024), especially low-resource ones
 (~79% bypass on GPT-4 — Yong et al., 2023; refusal rates collapsing
-from ~90% to 35–55% in West African languages — LSR benchmark, 2026),
+from ~90% to 35–55% in West African languages — LSR benchmark Faruna, 2026),
 and even *in English* when the register shifts to historical/academic
 framing (15.6% vs 57.2% safe — Said & Sani, 2026). Detection tools
 mostly answer `blocked: true`, and one boolean is hard to hunt. This kit
