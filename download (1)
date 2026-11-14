@@ -1,0 +1,10 @@
+# Text files use LF in the repository; PowerShell keeps CRLF for Windows.
+* text=auto eol=lf
+*.ps1 text eol=crlf
+*.sh text eol=lf
+# Binary assets are never line-converted or diffed as text.
+*.png binary
+*.jpg binary
+*.pdf binary
+*.pptx binary
+*.zip binary

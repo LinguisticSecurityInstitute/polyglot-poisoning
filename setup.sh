@@ -32,4 +32,4 @@ echo
 echo "DONE. Next stops:"
 echo "  - docs/PRE_EVENT_SETUP.md   (if you are prepping for the event)"
 echo "  - HUNTS.md                  (five guided hunts)"
-echo "  - ctf/README.md             (the three challenges)"
+echo "  - ctf/README.md             (the two challenges)"

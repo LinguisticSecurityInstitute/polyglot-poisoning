@@ -1,0 +1,39 @@
+# ── Python ──────────────────────────────────────────────
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# ── OS noise ────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+
+# ── Local run artifacts ─────────────────────────────────
+results.csv
+*.log
+submissions_vault.jsonl
+
+# ── NEVER COMMIT — organizer / credential material ──────
+# Challenge-planting scripts contain REAL flags. They live in the
+# private organizer pack only, never in this repository.
+plant_flags.py
+*_ORGANIZER*
+organizer*/
+# Room-only alternates are not part of the public corpus.
+alternates_in_room_only.md
+# Live-connection values: re-mint per session, store outside git.
+.env
+.env.*
+dce_config.*
+*_credentials*
+*.pem
+*.key
+token*
+# Organizer-only code and data — the private package, never this repository.
+receiver.py
+leaderboard/receiver.py
+flags*.json
+*.local.json
+proposals/
+corpus_v1v2_dce*
+*Solution-Walkthrough*
+CLAUDE.md

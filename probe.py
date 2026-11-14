@@ -41,10 +41,21 @@ def analyze(text):
     return min(score, 10), hits
 
 def main():
-    target = sys.argv[1] if len(sys.argv) > 1 else "samples"
-    files = ([target] if os.path.isfile(target)
-             else sorted(os.path.join(target, f) for f in os.listdir(target)
-                         if f.endswith(".txt")))
+    # Every argument is scanned, files and folders alike, so comparing two
+    # prompts side by side works the way the docs show it:
+    #     python probe.py samples/a.txt samples/b.txt
+    # Reading only argv[1] made that command silently score the first file
+    # and report "1 files scanned", which is easy to miss.
+    targets = sys.argv[1:] or ["samples"]
+    files = []
+    for target in targets:
+        if os.path.isfile(target):
+            files.append(target)
+        elif os.path.isdir(target):
+            files += sorted(os.path.join(target, f) for f in os.listdir(target)
+                            if f.endswith(".txt"))
+        else:
+            sys.exit(f"not found: {target}")
     print(f"{'file':38s} {'score':>5s}  verdict  signals")
     print("-" * 78)
     blocked = 0
