@@ -1,0 +1,58 @@
+Creative Commons Attribution-NonCommercial 4.0 International
+(CC BY-NC 4.0)
+
+SPDX-License-Identifier: CC-BY-NC-4.0
+
+Copyright (c) 2026 Sahara Al-Madi / Linguistic Security Institute
+
+
+WHAT THIS FILE COVERS
+─────────────────────
+
+The prompt corpus and the practice data:
+
+  samples/**              every prompt .txt file, and the notes that
+                          explain why each one is in the pack
+  data/practice_ledger.jsonl
+                          the synthetic ledger used for the offline hunts
+
+Cite it, fold it into your own evaluation
+set, publish what you find. Only commercial use needs a conversation.
+
+
+THE LICENSE
+───────────
+
+This work is licensed under the Creative Commons
+Attribution-NonCommercial 4.0 International License.
+
+To view a copy of this license, visit:
+  https://creativecommons.org/licenses/by-nc/4.0/
+
+Full legal code:
+  https://creativecommons.org/licenses/by-nc/4.0/legalcode.en
+
+Applying a CC license by this notice plus the canonical link is the
+method Creative Commons itself recommends. If you prefer an offline
+copy of the legal code alongside this file, download it unmodified
+from the URL above rather than retyping it.
+
+
+ATTRIBUTION
+───────────
+
+  Polyglot Poisoning prompt corpus — Sahara Al-Madi,
+  Linguistic Security Institute. CC BY-NC 4.0.
+  https://github.com/LinguisticSecurityInstitute/polyglot-poisoning
+
+
+NOT COVERED BY THIS LICENSE
+───────────────────────────
+
+Code and runnable queries (MIT)          see LICENSE
+Teaching material (BY-NC)                see LICENSE-CONTENT
+Names and marks                          see LICENSES.md
+
+A plain-language guide to what counts as commercial use is in
+LICENSES.md. If you are unsure, just ask. We say yes more often
+than not: linguisticsecurityinstitute@gmail.com
