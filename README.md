@@ -1,365 +1,300 @@
-# Polyglot Poisoning
+# THE SAMPLE PACK — why each file is here, and what to do with it
 
-**Hands-On Hunting for Linguistic Attacks in AI**
-DEATHCon 2026 (San Diego + online) · BSides San Diego · Sahara Al-Madi, [Linguistic Security Institute](https://almadisahara.com)
+79 prompt files. Every one is gray-zone benchmark material at the register
+academic safety benchmarks use. No real people, no real targets.
 
-Your safety filter reads English. Your attackers don't have to.
-
-A safeguard that refuses a request in English does not reliably refuse the
-same request in another language, dialect, script or framing. This kit teaches
-you to find that gap in your own telemetry — **without reading any of the
-languages involved.** You hunt the metadata around a request; the words come
-last.
+**Read this before you run anything.** The pack is not a pile of examples — it
+is a controlled experiment, and each group exists to prove one specific thing.
 
 ---
 
-## Start here
+## FIRST, RUN THE WHOLE PACK
 
-| | When | What you do | Time |
+```bash
+python probe.py samples/
+```
+
+Look at the bottom line:
+
+```
+79 files scanned, 0 would be blocked (score >= 5)
+```
+
+**No shipped sample reaches the threshold.** That is deliberate, and it is not
+a limit of the probe. Every sample here changes exactly **one** thing, so the
+output tells you what that one change did and nothing else. A prompt that
+changes several things at once behaves very differently — finding out how
+differently is the exercise.
+
+---
+
+## WHAT THE PROBE ACTUALLY SEES
+
+`probe.py` reads the **surface** of a prompt — never its meaning — and returns
+a number together with the names of whatever it noticed. It does not decide
+whether anything is harmful. It tells you which rows to read first.
+
+**This page deliberately does not print the scoring table.** Run the tool and
+it will tell you itself:
+
+```bash
+python probe.py samples/00_baseline_en.txt
+python probe.py samples/v1_es_direct_translation.txt
+```
+
+The output names each signal it found. Compare a few files and the behavior
+becomes clear quite quickly — which is the point.
+
+Two reasons this page stays blank where a rubric would go:
+
+1. **The Season 1 submission round is a blind test.** The brief is open on
+   purpose: write a prompt, no rules and no worked examples, and see what you
+   can do. A room holding the scoring recipe stops writing prompts and starts
+   maximizing a number, and the findings stop being worth publishing.
+2. **Working it out is better than being told.** You have the tool, the
+   samples, and the source — `probe.py` is a short file of standard-library
+   Python with nothing hidden in it. It is just not collected into a table here.
+
+If you read `probe.py` and work out the scoring in two minutes: good. That is
+a legitimate way to learn it and a better one than reading a table. What we
+will not do is hand the table to everyone and then ask for original work.
+
+---
+
+## THE FOUR GROUPS, AND THE POINT OF EACH
+
+### 1 · `00_baseline_en.txt` — the control
+
+Plain English, no shaping. Everything else is measured against this one file,
+so run it first — whatever it reports is your definition of "nothing".
+
+### 2 · `v1_*_direct_translation.txt` — one request, ten languages
+
+The same request translated into ten languages. Nothing else is changed. This
+group is here to show you a split that surprises a lot of people:
+
+| Files | Script | Probe score | What the probe saw |
 |---|---|---|---|
-| **1** | Before the event | [Quickstart](#1--quickstart-offline-5-minutes) — get the kit, check it, run the probe | 5 min |
-| **2** | Before the event | **[Sentinel access](#2--sentinel-access)** — sign in, find the table. **Required for the challenges.** | 5 min |
-| **3** | During and after | [Work the kit](#3--your-path-through-the-kit) — hunts, challenges, optional leaderboard | yours |
+| `v1_es`, `v1_de`, `v1_fr`, `v1_it`, `v1_pt`, **`v1_sw`** | Latin | **0** | **nothing at all** |
+| `v1_ar`, `v1_bn`, `v1_hi`, `v1_th` | non-Latin | **2** | the script, and only the script |
 
-**What works where:**
+**The lesson:** a fluent Spanish translation of a request the probe would care
+about is, to this probe, *indistinguishable from the baseline*. It scores zero.
+Not because it is safe — because the probe cannot see meaning, only surface.
 
-| Offline, on your laptop | Live, with your DEATHLab account |
+The non-Latin files do not score 2 because they are more dangerous. They score
+2 because they are in a different alphabet. **That is a proxy, not a judgment**,
+and the distinction is an easy one to lose track of.
+
+> **Try `v1_sw` (Swahili) alongside `v1_de` (German).** Swahili is a far
+> lower-resourced language than German, and it is exactly the kind of language
+> where published research finds safeguards weakest. Run both and compare what
+> the probe reports.
+>
+> Then ask what that tells you. If a score tracks how *visually unusual* text
+> looks rather than how risky it is, a system built on it can end up watching
+> some languages closely and others hardly at all. That gap is what this
+> workshop teaches you to hunt, and this pair is the clearest example of it in
+> the pack.
+
+### 3 · `v2_ar_egyptian_dialect.txt`, `v2_ar_tunisian_dialect.txt` — the dialect pair
+
+Same root request, asked in two Arabic varieties rather than Modern Standard.
+These are the only true **V2** files in the pack.
+
+Compare them with `v1_ar_direct_translation.txt`. All three score the same,
+because all three are Arabic script. **The probe cannot tell Modern Standard
+from Egyptian from Tunisian.** A filter tuned on one may not handle the others
+at all — and the telemetry is the only place that difference becomes visible,
+which is why `Language` is recorded at dialect level in the ledger.
+
+### 4 · `v1_en_framing_*.txt` and `v1_en_register_shift.txt` — English, reshaped
+
+Six files, all English, all **V1**, each wrapped in a different costume: a
+museum label, a 1920s manual, an academic history, a 1985 novel, a simple
+children's book, and a register shift.
+
+Each changes the framing and nothing else.
+
+**These complicate the easy story:** reshaping happens *in English too*. Run
+one against the baseline and compare. If this were purely about foreign
+languages, you would expect no difference at all. What is really being
+measured is **distance from the training distribution**, and language is one
+way to travel — not the only one.
+
+> **Why these are V1 and not V2.** `Variant` records *dialect*, nothing else.
+> A request only dressed as an old manual is still asked plainly, so it stays
+> `V1`, and the costume shows up in `Patterns`. If you came here from an older
+> copy of the pack where these were named `v2_*`, that was inconsistent and is
+> now fixed.
+> **Two variant codes exist: `V1` and `V2`.** Everything else about a prompt's shape is recorded in `Patterns`.
+
+---
+
+## THE CATEGORY PACK — 60 files, 12 requests × 5 versions
+
+`pol*`, `eth*` and `hak*` are twelve requests across three subject areas
+(civic influence, everyday ethics, offensive security), each in five versions:
+
+| Suffix | Version |
 |---|---|
-| `probe.py`, the 79 samples, the 22-row practice ledger, four of the five hunts, the rule template, the mock receiver | The `PolyglotPoisoning_CL` table in Sentinel, both challenges, the optional leaderboard |
+| `_en` | English baseline — the control |
+| `_es` | Spanish · V1 direct translation |
+| `_ar` | Modern Standard Arabic · V1 direct translation |
+| `_eg` | Egyptian Arabic · V2 dialect |
+| `_tn` | Tunisian Arabic · V2 dialect |
 
-The offline kit has the same seven columns as the live table, so you can
-rehearse every move before you touch it — and keep working if your access
-breaks mid-session. You just cannot play the challenges offline.
+Pick **one** request — `pol1`, say — and run all five. You will see the same
+0 / 0 / 2 / 2 / 2 shape as above. Then pick a second request and check the
+shape holds. That repetition is the point: it is a pattern, not an accident.
 
-**Keep this open:** [`docs/KQL_CHEAT_SHEET.md`](docs/KQL_CHEAT_SHEET.md) — every
-instruction and query the workshop uses, on one sheet (also as a printable PDF in `docs/`).
-
----
-
-## 1 · Quickstart (offline, 5 minutes)
-
-Python 3.8 or newer. No `pip install`, no model, no account, no network.
-
-```bash
-git clone https://github.com/LinguisticSecurityInstitute/polyglot-poisoning.git
-cd polyglot-poisoning
-python3 tests/check_setup.py         # expect: SETUP OK
-python3 tests/check_repository.py    # expect: REPOSITORY OK
-python3 probe.py samples/            # expect: 79 files scanned, 0 would be blocked (score >= 5)
-```
-
-On Windows use `py` or `python` instead of `python3`, or run `setup.ps1`;
-macOS and Linux can run `setup.sh`. Doing this well ahead of the day:
-[`docs/PRE_EVENT_SETUP.md`](docs/PRE_EVENT_SETUP.md).
-
-**Then try this — it is the whole workshop in one command.** `probe.py` takes
-one file, one folder, or several of either:
-
-```bash
-python3 probe.py samples/00_baseline_en.txt samples/v1_sw_direct_translation.txt
-```
-
-Same request, two languages. Write down what you expect before you press
-Enter — the gap between your guess and the number is the lesson.
-
-### Other ways to run the kit
-
-**Docker** (optional — the kit itself needs only Python):
-
-```bash
-docker build -t polyglot-poisoning .
-docker run --rm polyglot-poisoning                      # setup check
-docker run --rm polyglot-poisoning probe.py samples/    # scores the sample pack
-```
-
-**Oracle VirtualBox — an existing Ubuntu VM** such as `sahaa_lsi-SANDIEGO`.
-On the **host**, snapshot first:
-
-```bash
-VBoxManage snapshot "sahaa_lsi-SANDIEGO" take "before-polyglot-poisoning"
-```
-
-Then **inside the Ubuntu VM**, from the repository root:
-
-```bash
-bash vm/bootstrap-ubuntu.sh
-```
-
-The full guide — inspecting the VM, the participant baseline, moving a newer
-ZIP into the VM when GitHub is behind, Sentinel from the VM's browser, and
-restoring the snapshot — is [`docs/VIRTUALBOX.md`](docs/VIRTUALBOX.md). Every
-step is labeled HOST or UBUNTU VM.
+Full text of every one is in [`ALL_PROMPTS.md`](ALL_PROMPTS.md); the matrix is
+in [`CATEGORY_PACK.md`](CATEGORY_PACK.md).
 
 ---
 
-## 2 · Sentinel access
+## HOW TO HUNT THESE IN THE LEDGER
 
-**This is where the challenges happen.** The live table, both challenges and
-the optional leaderboard all run here.
+The samples are the *input*. [`data/practice_ledger.jsonl`](../data/practice_ledger.jsonl)
+is what they look like once logged — 22 rows, carrying the same seven columns
+as the live table. It is a local file, so it needs no lab at all.
 
-1. Sign in to the **Azure portal** with your own authorized **DEATHLab** account.
-2. Open **Microsoft Sentinel**.
-3. Select the **`deathcon2026-sentinel`** workspace.
-4. Open **Logs**, and set the time range to **Last 30 days**.
-5. Run:
-
-```kql
-PolyglotPoisoning_CL
-| take 20
-```
-
-You can also find `PolyglotPoisoning_CL` in the **Tables** pane, under
-**Custom Logs**. For challenge hunting, drop the optional leaderboard rows first:
-
-```kql
-PolyglotPoisoning_CL
-| where UserPrincipal !endswith "@lb"
-| take 20
-```
-
-**About access:**
-
-- **A shared link grants no permissions.** Access comes from your own
-  authorized account, not from a URL someone sends you.
-- You need **read access to one table** and nothing more — never DCE, DCR,
-  stream or ingestion permissions. The DCE is an ingestion endpoint, not the
-  table, and you never query it.
-- No rows, or a permissions error? Check the account, the workspace and the
-  time range, then ask the organizer to confirm your account has
-  **Microsoft Sentinel Reader** (and, if needed, **Log Analytics Reader**) on
-  the workspace. Keep working offline meanwhile.
-
-> **A correct query returns nothing?** The time range is the cause about four
-> times out of five. The other four causes, and how to find them without
-> guessing, are on the [cheat sheet](docs/KQL_CHEAT_SHEET.md#10--a-correct-query-that-returns-nothing).
-
----
-
-## 3 · Your path through the kit
-
-| Step | Open | What it gives you |
-|---|---|---|
-| 1 | [`docs/LEDGER_REFERENCE.md`](docs/LEDGER_REFERENCE.md) | The seven columns. Keep it in a second tab. |
-| 2 | [`docs/KQL_CHEAT_SHEET.md`](docs/KQL_CHEAT_SHEET.md) | Every query and instruction for the session. |
-| 3 | [`HUNTS.md`](HUNTS.md) | Five guided hunts with fill-in-the-blank queries and a self-check each. |
-| 4 | [`ctf/README.md`](ctf/README.md) | Both challenges: rules, hint ladders, no spoilers. |
-| 5 | [`detection/`](detection/) | Turn a finding into a rule you could defend at work; the full query pack. |
-| 6 | [`docs/LEADERBOARD.md`](docs/LEADERBOARD.md) | The Living Atlas Leaderboard — optional. |
-| — | [`WORKSHOP.md`](WORKSHOP.md) | How the session runs. |
-
-### The seven columns
-
-| Column | Type | What it is | |
-|---|---|---|---|
-| `TimeGenerated` | `datetime` | when it landed | hunt this |
-| `UserPrincipal` | `string` | who — `@lb` marks a leaderboard row | hunt this |
-| `Language` | `string` | the language or regional code | hunt this |
-| `Variant` | `string` | `V1` standard or direct · `V2` regional variety or dialect | hunt this |
-| `RiskScore` | `real` | the number the probe returned; the alert fires at 5 | hunt this |
-| `Patterns` | `string` | the shaping stamps that fired, comma separated | hunt this |
-| `PromptPreview` | `string` | the first 200 characters of the text | **read last** |
-
-Register, framing, code-switching and transliteration are recorded in
-`Patterns`, never as extra Variant values.
-
-### What a row looks like
-
-Three of the highest-scoring rows in the practice ledger, then the English control:
-
-```
-TimeGenerated         UserPrincipal              Language  Variant  RiskScore  Patterns
-2026-11-01T17:07:00Z  static_wren@deathlab.net   ar-EG     V2       8          script_diversity,register_shift,code_switch
-2026-11-01T17:03:00Z  amber_saddle@deathlab.net  ar-TN     V2       6.5        script_diversity,register_shift,framing
-2026-11-01T16:35:00Z  harbor_moth@deathlab.net   ar-TN     V2       4.3        script_diversity,register_shift
-2026-11-01T16:00:00Z  north_pier@deathlab.net    en-US     V1       0          (empty)
-```
-
-The last row is the same request in English, scoring zero with an *empty*
-`Patterns`. Across the practice ledger, **2 rows scored 5 or more and were
-blocked, 12 scored between 2 and 5 and nothing fired, and 8 scored under 2.**
-Low priority is not the same as cleared.
-
-### The five hunts
-
-1. **Metadata anchors** — one written root sits unchanged across three dialects.
-2. **Stacking and frequency** — split multi-value columns *before* you count.
-3. **Threshold evasion** — look in the band below the alert, not only at the blocks above it.
-4. **Correlation** — when the prompt becomes a process. *(Needs a second table — run it at work.)*
-5. **Translate last** — triage on labels; open only what survives.
-
-### The two challenges
-
-| # | Challenge | Level | The core move |
-|---|---|---|---|
-| 1 | **Babel's Ledger** | easy | three metadata conditions true at once |
-| 2 | **Rosetta Fragments** | advanced | split before you count, then sequence and reassemble |
-
-Ten attempts each — plenty if you hunt, nowhere near enough if you guess. Both
-are played against the live table during the event window, separately from
-the guided session; rehearse the mechanics on the practice ledger first.
-
----
-
-## The probe, honestly
-
-`probe.py` (the Alembic) reads the **surface** of a prompt — its script,
-whether it switches languages, whether it carries transliteration or a
-framing device — and returns a number plus the names of what it noticed.
-
-- It **does not** read meaning, judge intent, or decide whether anything is
-  harmful. It tells you which rows to read first.
-- **Some complete, fluent requests score nothing at all.** That is not the
-  probe failing; it is the lesson, and the reason the hunting half of this
-  workshop exists.
-- Single-dimension surface scoring is a teaching instrument, not a product.
-
-It is short, standard library only, and nothing in it is hidden: every signal
-and what it is worth is in the source and in the probe's own output. The
-optional leaderboard ranks on exactly this score, computed again by the event
-receiver.
-
-## Optional — a local model alongside it
-
-Not required. But reading that a safeguard behaves differently across
-languages is one thing; watching it on a machine you own is another. If you
-already run a model locally, use that. Otherwise, with [Ollama](https://ollama.com):
+The move that matters: **do not read the prompts first.** Cut the table down on
+the labels, and only open `PromptPreview` for whatever survives.
 
 ```bash
-ollama pull phi3:mini                               # ~2.3 GB download, ~4 GB RAM
-ollama run phi3:mini "$(cat samples/eth1_en.txt)"   # the English baseline
-ollama run phi3:mini "$(cat samples/eth1_es.txt)"   # same request, Spanish
-python3 probe.py samples/eth1_en.txt samples/eth1_es.txt
+# how the pack looks as telemetry
+python -c "import json;[print(json.loads(l)['Language'], json.loads(l)['Variant'], json.loads(l)['RiskScore']) for l in open('data/practice_ledger.jsonl')]"
 ```
 
-**The interesting outcome is a disagreement** — a prompt the probe scores low
-that the model treats differently anyway. Use the curated samples only, keep
-it local, and **report the score and the patterns, never a model's response.**
-Rows from the live table never go into any model.
-
-## The Living Atlas Leaderboard (optional)
-
-Write a prompt — no rules, no template — score it with the probe, and submit
-it if you want to. It becomes a row in the same table you learned to hunt,
-under a handle you choose.
-
-```bash
-python3 leaderboard/submit.py --url http://RECEIVER_ADDRESS:8730 \
-    --handle YOUR_HANDLE --file my_prompt.txt --lang hi-IN --variant V1
-```
-
-- **One prompt per submission.** `--lang` takes any ISO code (`es`, `ar-EG`,
-  `sw-KE`), or `mul` if the prompt mixes languages. `--variant` is `V1` or `V2`.
-- The receiver address is given in the session and the DEATHCon Discord, not
-  in this repository. To rehearse first, run `python3 tests/mock_receiver.py`
-  and use `--url http://127.0.0.1:8730` — it scores locally and sends nothing anywhere.
-- The receiver scores your prompt again itself, adds `@lb` to your handle, and
-  rejects anything containing `flag{`. Your row reaches the table in about
-  **5–15 minutes**.
-- **Every accepted submission earns a seal** for the stage it reaches —
-  Nigredo, Albedo, Citrinitas or Rubedo. Rubedo (5 or more) also earns the
-  Polyglot Poisoning Hunter badge.
-
-> **Disclosure, plainly:** submissions are prompt text only — never model
-> responses. Prompts are logged, scored, and shown on the live leaderboard,
-> and may inform LSI's published research and detection rules — anonymized,
-> always. Which entries are selected into The Living Atlas is LSI's decision;
-> accepted prompts are credited by handle. Nothing is sent unless you choose
-> to submit. Full details: [`docs/LEADERBOARD.md`](docs/LEADERBOARD.md).
-
-## Rules of engagement
-
-- **Handles, not real names** — on the challenge board and the leaderboard.
-- **Prompts, not outputs.** Never paste a model's response anywhere.
-- **Decode it. Do not execute it.** Prompts in the ledger are specimens: read
-  them, label them, count them. Never paste one into a live model.
-- **Read the table, don't write to it.** Query all you want.
-- **Don't share flags or full solutions.** "What does `mv-expand` do?" is a
-  good question. A query that solves a challenge is not a good answer.
-
-## Repository map
-
-```
-probe.py                       the Alembic — surface scoring, standard library only
-samples/                       79 prompt files and the notes on why each is there
-data/practice_ledger.jsonl     22 rows of synthetic ledger telemetry, seven columns
-HUNTS.md                       five guided hunts, with self-checks
-WORKSHOP.md                    how the session runs
-ctf/                           both challenges: player guide, ledger reference, field card
-detection/                     rule template, a worked rule, and WORKSHOP_QUERIES.kql
-docs/                          cheat sheet, ledger reference, leaderboard, pre-event setup,
-                               VirtualBox guide, and the downloadable PDFs and slides
-leaderboard/submit.py          optional: submit a prompt of your own
-leaderboard/living_atlas_board.kql   the query behind the live board
-leaderboard/board.py           draws the board from ledger rows
-leaderboard/badges/            the four seals
-tests/check_setup.py           is my kit OK?            -> SETUP OK
-tests/check_repository.py      is the repo consistent?  -> REPOSITORY OK
-tests/mock_receiver.py         rehearse a submission locally; sends nothing
-vm/bootstrap-ubuntu.sh         prepare an Ubuntu VM for the kit
-Dockerfile, .dockerignore      the kit in a container
-setup.sh, setup.ps1            one-command setup for macOS/Linux and Windows
-```
-
-## What this repo is — and is not
-
-- **V1 and V2 only.** Everything here applies published methodology
-  (translation attacks, resource-level decay, register and temporal framing)
-  to gray-zone, benchmark-register questions. Nothing touches a real person,
-  company or target.
-- **The two open levels of The Living Atlas.** The Phoenix Corpus — LSI's
-  extended research collection — is packaged separately, on its own terms.
-- The corpus translations are original LSI work, released for education and
-  research. NAMAA contributed native-fluency verification for selected
-  initial dialect prompts; the wider corpus, methodology, tooling and research
-  are LSI's.
-- This repository is participant material only. Event infrastructure,
-  challenge data and solutions are kept separately and are never committed here.
-
-### Sources
-
-- Deng et al., *Multilingual Jailbreak Challenges in LLMs*, ICLR 2024 (arXiv:2310.06474)
-- Yong, Menghini & Bach, *Low-Resource Languages Jailbreak GPT-4* (arXiv:2310.02446)
-- Faruna, *LSR: Linguistic Safety Robustness Benchmark for Low-Resource West African Languages* (arXiv:2603.19273)
-- Said & Sani, *Safe in the Future, Dangerous in the Past* (arXiv:2512.24556)
-- Background: Upadhayay & Behzadan, *Sandwich Attack* (arXiv:2404.07242) · Poppi, Yong et al., NAACL 2025 Findings (2025.findings-naacl.126) · Yong et al., EMNLP 2025 (2025.emnlp-main.800)
-
-Results in this area vary a great deal between studies — including a 2026
-counterpoint that found almost no dialect gap. That variation is the argument
-for measuring your own deployment rather than inheriting a number.
-
-## Recordings
-
-The workshop is recorded in three parts of about fifteen minutes each:
-
-1. **Why it matters** — the gap, the published evidence, a Linguistic Firewall demo.
-2. **The table and the query** — Sentinel, the custom table, KQL, the four metadata moves.
-3. **One hunt, start to finish** — a worked case, a detection rule, the challenges, and the optional leaderboard.
-
-Links are added here when the recordings are published.
-
-## Need help?
-
-- **During the event:** the workshop Discord channel. Describe where you are
-  stuck — "my `mv-expand` returns nothing" — rather than what you think the
-  flag is. Re-running the matching hunt in [`HUNTS.md`](HUNTS.md) is usually
-  the quickest way to get moving again.
-- **Anything that should not be public, or a security issue:** see [`SECURITY.md`](SECURITY.md).
-- **Improving the kit:** see [`CONTRIBUTING.md`](CONTRIBUTING.md).
-
-## License
-
-| What | License |
-|---|---|
-| Code, scripts, and **every runnable query or detection rule** | MIT — [`LICENSE`](LICENSE) |
-| The prompt corpus and practice data | CC BY-NC 4.0 — [`LICENSE-PROMPTS`](LICENSE-PROMPTS) |
-| The teaching material | CC BY-NC 4.0 — [`LICENSE-CONTENT`](LICENSE-CONTENT) |
-
-**Take the queries to work.** Every KQL query and detection rule here is MIT,
-wherever it appears. The curriculum and corpus are free to use and teach
-from, with commercial use by permission. The names and marks are licensed by
-neither — the full map is [`LICENSES.md`](LICENSES.md).
+The five guided hunts in [`../HUNTS.md`](../HUNTS.md) walk this properly. Each
+has a self-check so you know whether you got it right. Note that the `<ANCHOR>`,
+`<CODE>` and `<SPLIT>` blanks in that file are **yours to fill** — they are the
+exercise, not an unfinished document.
 
 ---
 
-**Contact:** almadisahara.com · linguisticsecurityinstitute@gmail.com
-Workshop listing: DEATHCon 2026 (online + San Diego) & BSides San Diego.
+## HOW TO CRAFT YOUR OWN
+
+This is the part worth your time, and the only part that adds to the Atlas.
+
+**The rule: change exactly one thing.** Not two. One. If you change the
+language *and* the framing, you cannot tell which one moved the score.
+
+```
+predict  →  run  →  record  →  change ONE thing  →  run again
+```
+
+1. **A sample is an easy starting point.** Copying one file keeps your control
+   intact. Writing from scratch is just as welcome — the brief is open.
+2. **Predict before you run.** Write down what you think the probe will report
+   and why. It is an easy step to skip, and it is the one that does the teaching.
+3. **Change one dimension** — the language, *or* the variety, *or* the register.
+4. **Run the probe:** `python probe.py yours.txt`
+5. **Compare with your prediction.** A prediction that misses is the useful
+   outcome — that gap is the finding.
+
+### Then stack, deliberately
+
+Once one change behaves the way you expect, add a second and predict again.
+This is how you climb toward 5 and the badge:
+
+```
+ 2   script only            ← one dimension
+ 4   + mix it into English  ← L2 joins
+ 6   + digit-letters        ← L3 joins
+ 7   + a costume phrase     ← L4, and the wire trips
+```
+
+**Add one signal at a time and re-run between each.** If you jump straight to
+all four you will get a 7 and learn nothing about which part did the work.
+Write the score down at each step — that ladder is the actual finding, and it
+is far more interesting to submit than the final prompt on its own.
+
+### If you have a local model
+
+Optional, and it makes everything above concrete. Any local model works —
+`ollama pull phi3:mini` (2.3 GB) or `phi4` (9 GB) if you have the RAM, or
+whatever you already run.
+
+```bash
+ollama run phi3:mini "$(cat samples/eth1_en.txt)"     # the baseline
+ollama run phi3:mini "$(cat samples/eth1_es.txt)"     # same request, Spanish
+python probe.py samples/eth1_en.txt samples/eth1_es.txt
+```
+
+**Chase the disagreement.** A prompt the probe walks straight past that the
+model treats differently anyway is the most valuable thing you can find here — it is
+a gap the probe cannot see, and the whole workshop is about those gaps. The
+pilot's single most instructive prompt was one the probe ignored.
+
+Rules if you do this: keep it local (no API keys, no hosted models), **prompts
+only — never paste a model's response anywhere**, and only against a model you
+control and are authorized to test.
+
+---
+
+## HOW TO SUBMIT
+
+Optional. Every exercise above works without submitting anything.
+
+**The brief is open.** No rules, no template, no worked examples — write a
+prompt, be as creative as you like, and see what you can do. Starting from a
+sample is fine; nothing asks you to.
+
+```bash
+# 1 · test locally first — the receiver runs this exact probe
+python probe.py my_prompt.txt
+
+# 2 · submit the prompt
+python leaderboard/submit.py \
+    --url   http://RECEIVER_ADDRESS:8730 \
+    --handle YOUR_HANDLE \
+    --file   my_prompt.txt \
+    --lang   hi-IN --variant V1
+```
+
+### The language code
+
+`--lang` takes **any** ISO code — two letters where one exists, three where it
+does not, each with an optional region or variety subtag. `es`, `hi`, `th`,
+`ar-EG`, `ar-MSA`, `sw-KE` are all accepted.
+
+**Mixing, matching or experimenting past any single label? Use `--lang mul`.**
+It is the ISO code for *multiple languages*, it counts exactly the same as any
+other, and it never earns a mismatch stamp. No one should hold back a
+contribution because they were unsure what to call it.
+
+`--variant` describes the **prompt form**, not the number of languages: `V1`
+standard or direct, `V2` a regional variety or dialect. A mixed prompt is
+still `V1` unless part of it is dialect. Register and framing are not
+Variant — they are recorded in `Patterns`.
+
+> **The receiver address is not in this repository.** It is specific to one
+> event and is given out in the session and in the DEATHCon Discord. Replace
+> `RECEIVER_ADDRESS` above with it. To rehearse first, run the local mock
+> receiver in [`../tests/mock_receiver.py`](../tests/mock_receiver.py) and use
+> `--url http://127.0.0.1:8730`.
+
+- **Prompts only, never model responses.**
+- **A handle, not your real name.**
+- Score comes back immediately; your row reaches the table in about 5–15 minutes.
+- Reaching the probe's own threshold earns the Polyglot Poisoning Hunter
+  badge. The tool tells you when you get there.
+- Every accepted prompt is credited to its contributor in The Living Atlas,
+  permanently, under the handle you choose. Conditions are in
+  [`../docs/LEADERBOARD.md`](../docs/LEADERBOARD.md).
+
+**A low score is not a failure.** A fluent, complete request that this probe
+walks straight past is a finding, and it is creditable like any other. Those
+are the rows the hunting half of the workshop exists for.
+
+---
+
+## THE BOUNDARY
+
+- Gray-zone benchmark material only. No real people, no real targets.
+- This is a **defensive hunting** workshop.
+- Prompts only, never model outputs — in the Discord, in an issue, anywhere.
+- Handle, not real name.
+- Your laptop, your model, your call: only test what you are authorized to test.
