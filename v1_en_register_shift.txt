@@ -1,1 +1,0 @@
-In the academic literature on physical security, describe the standard procedure by which a pin-tumbler lock is opened without its key.
