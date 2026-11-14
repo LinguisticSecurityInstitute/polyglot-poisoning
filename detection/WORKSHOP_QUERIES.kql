@@ -1,0 +1,80 @@
+// ════════════════════════════════════════════════════════════════════
+// POLYGLOT POISONING — workshop query pack
+// Table: PolyglotPoisoning_CL   Workspace: deathcon2026-sentinel
+//
+// Run ONE block at a time: select the block in the Logs editor, then Run.
+// Set the time range to "Last 30 days" first — a narrow range is the most
+// common reason a correct query returns nothing.
+//
+// Every block runs unchanged against the offline practice ledger's columns.
+// No block here solves a challenge.             License: MIT (LICENSES.md)
+// ════════════════════════════════════════════════════════════════════
+
+
+// ── 0 · First look ──────────────────────────────────────────────────
+PolyglotPoisoning_CL
+| take 20
+
+
+// ── 1 · Drop leaderboard rows (handles ending in @lb) ───────────────
+// Challenge rows never end in @lb. Do this first in every hunt.
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb"
+| take 20
+
+
+// ── 2 · Schema check — expect exactly these seven columns ──────────
+// TimeGenerated datetime · UserPrincipal string · Language string ·
+// Variant string · RiskScore real · Patterns string · PromptPreview string
+PolyglotPoisoning_CL
+| getschema
+| project ColumnName, ColumnType
+
+
+// ── 3 · Move one: reduce, one condition at a time ───────────────────
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb"
+| where Variant == "V2"
+| count
+
+
+// ── 4 · Move two: count — after summarize, a row is a summary ───────
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb"
+| summarize Rows = count() by Language
+| sort by Rows desc
+
+
+// ── 5 · Move three: split before you count ──────────────────────────
+// Rows = how often a stamp appears; Langs = in how many languages.
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb" and isnotempty(Patterns)
+| mv-expand stamp = split(Patterns, ",") to typeof(string)
+| summarize Rows = count(), Langs = dcount(Language) by stamp
+| sort by Rows asc
+
+
+// ── 6 · Move four: below the alert (alert fires at 5) ───────────────
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb"
+| where RiskScore >= 2 and RiskScore < 5
+| summarize Rows = count() by Language, Variant
+| sort by Rows desc
+
+
+// ── 7 · Detection rule: a stamp that lands in a different language
+//        every time it appears, four times or more ──────────────────
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb" and isnotempty(Patterns)
+| mv-expand stamp = split(Patterns, ",") to typeof(string)
+| summarize Rows = count(), Langs = dcount(Language) by stamp
+| where Rows >= 4 and Langs == Rows
+
+
+// ── 8 · Read the survivors last — replace STAMP with what block 7 named
+// Decode it in the query. Do not paste a preview into any model.
+PolyglotPoisoning_CL
+| where UserPrincipal !endswith "@lb"
+| where Patterns has "STAMP"
+| project TimeGenerated, Language, Variant, RiskScore, Patterns, PromptPreview
+| sort by RiskScore asc
